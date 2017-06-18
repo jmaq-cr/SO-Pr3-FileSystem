@@ -73,7 +73,33 @@ public class ConsoleTest {
                     String fileName = br.readLine();
                     System.out.println(system.viewFileContents(fileName));
                 }else if("CPY".equals(input) && running){
-                    System.out.println("In development");
+                    System.out.println("1. Real to virtual file");
+                    System.out.println("2. Virtual to real file");
+                    System.out.println("3. Virtual to virtual file or directory");
+                    System.out.print(">>");
+                    int option = Integer.parseInt(br.readLine());
+                    if(option == 1){
+                        System.out.print("File name ->");
+                        String fileName = br.readLine();
+                        System.out.print("Real source path ->");
+                        String path = br.readLine();
+                        System.out.println(system.copyFile(fileName,path,1));
+                    }else if(option == 2){
+                        System.out.print("File name ->");
+                        String fileName = br.readLine();
+                        System.out.print("Real destiny path ->");
+                        String path = br.readLine();
+                        System.out.println(system.copyFile(fileName,path,2));
+                    }else if(option == 3){
+                        System.out.print("File or directory name ->");
+                        String fileName = br.readLine();
+                        System.out.print("Virtual destiny path ->");
+                        String path = br.readLine();
+                        System.out.println(system.copyFile(fileName,path,3));
+                    }else{
+                        System.out.println("Wrong option");
+                    }
+
                 }else if("MOV".equals(input) && running){
                     System.out.print("File name ->");
                     String fileName = br.readLine();

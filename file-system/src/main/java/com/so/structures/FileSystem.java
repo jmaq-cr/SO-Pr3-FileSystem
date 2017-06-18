@@ -1,5 +1,11 @@
 package com.so.structures;
 
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
+
 /**
  * Created by Jose Aguilar Quesada on 6/17/2017.
  */
@@ -24,7 +30,7 @@ public class FileSystem {
     public String createFile(String fileName, boolean replace, String pContent){
         int res = currentDir.createFile(fileName, replace, pContent);
         if(res == -1){
-            return "File already exist";
+            return "Error in creating";
         }
         else{
             return "File created";
@@ -117,6 +123,8 @@ public class FileSystem {
             Directory state = currentDir;
             changeDir(path);
             movedDir.setName(newName);
+            movedDir.setParentDirectory(currentDir);
+            movedDir.setLevel(currentDir.getLevel()+1);
             currentDir.addDir(movedDir);
             currentDir = state;
             currentDir.removeDir(oldName);
@@ -132,5 +140,75 @@ public class FileSystem {
     public String tree(){
         return rootDir.treePrint();
     }
+
+    //fileName file in the virtual FileSystem
+    //path place to get the real file, to write the virtual real file or paste the virtual file
+    //Modes 1 - real a virtual
+    //      2 - virtual a real
+    //      3 - virtual a virtual
+    public String copyFile(String fileName, String path, int mode) throws IOException {
+        if(mode == 1){
+            try {
+                String content = readFile(path);
+                return createFile(fileName,false,content);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return "Error in file copy";
+            }
+        }else if (mode == 2){
+            String content = currentDir.getFile(fileName).getContent();
+            writeFile(path,content);
+            return "File copied";
+        }else if (mode == 3){
+            if(fileName.indexOf(".") != -1){
+                File movedFile = currentDir.getFile(fileName);
+                Directory state = currentDir;
+                changeDir(path);
+                if(currentDir.getFile(fileName) == null){
+                    currentDir.addFile(movedFile);
+                    currentDir = state;
+                    return "File copied";
+                }
+                else{
+                    currentDir = state;
+                    return "File already exist";
+                }
+
+            }
+            else if(fileName.indexOf(".") == -1){
+                Directory movedDir = currentDir.getDirectory(fileName);
+                Directory state = currentDir;
+                changeDir(path);
+                if(currentDir.getDirectory(fileName) == null){
+                    movedDir.setParentDirectory(currentDir);
+                    movedDir.setLevel(currentDir.getLevel()+1);
+                    currentDir.addDir(movedDir);
+                    currentDir = state;
+                    return "Directory copied";
+                }else{
+                    currentDir = state;
+                    return "Directory already exist";
+                }
+            }
+            else{
+                return "Error";
+            }
+        }else{
+            return "Wrong choice";
+        }
+
+    }
+
+    private String readFile(String path) throws FileNotFoundException {
+        String content = new Scanner(new java.io.File(path)).useDelimiter("\\Z").next();
+        return content;
+    }
+
+    private void writeFile(String path, String content) throws IOException {
+        BufferedWriter writer = new BufferedWriter( new FileWriter(path));
+        writer.write(content);
+        writer.close();
+    }
+
 
 }
