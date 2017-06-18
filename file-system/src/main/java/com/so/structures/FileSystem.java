@@ -95,7 +95,7 @@ public class FileSystem {
 
     /*VIEW: Para un determinado archivo se debe poder ver el contenido del archivo.*/
     public String viewFileContents(String fileName){
-        return currentDir.viewFileContent(fileName);
+        return fileName + " -> " + currentDir.viewFileContent(fileName);
     }
 
     /*MOV: Mover un archivo o directorio. Nótese que el MV sirve como rename, pues se puede mover al
