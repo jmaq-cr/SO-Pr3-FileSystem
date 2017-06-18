@@ -10,8 +10,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
-    <orderEntry type="library" name="org.apache.mina:mina-core:2.0.7" level="project" />
-    <orderEntry type="library" name="Simple Logging Facade for Java:1.6.6" level="project" />
+    <orderEntry type="library" exported="" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
+    <orderEntry type="library" exported="" name="org.apache.mina:mina-core:2.0.7" level="project" />
+    <orderEntry type="library" exported="" name="org.slf4j:slf4j-simple:1.6.6" level="project" />
   </component>
 </module>
