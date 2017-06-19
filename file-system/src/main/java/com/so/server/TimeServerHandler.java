@@ -1,14 +1,10 @@
 package com.so.server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Date;
 
+import com.so.structures.VirtualMemory;
 import com.so.structures.FileSystem;
-import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
@@ -39,6 +35,10 @@ public class TimeServerHandler extends IoHandlerAdapter {
 
         String input = message.toString();
         String[] splitStr = input.split("\\s+");
+        VirtualMemory[][] matriz = null;
+        int sectorNumber = 0;
+        int sectorSize = 0;
+        File file = null;
 
         if ("EXIT".equals(splitStr[0])) {
             System.out.println("Close...");
@@ -47,10 +47,45 @@ public class TimeServerHandler extends IoHandlerAdapter {
         } else if ("CRT".equals(splitStr[0])) {
             //CRT [Root name:String] [Number of sectors:int] [Size of sectors:int]
             String rootName = splitStr[1];
-            int sectorNumber = Integer.parseInt(splitStr[2]);
-            int sectorSize = Integer.parseInt(splitStr[3]);
+            sectorNumber = Integer.parseInt(splitStr[2]);
+            sectorSize = Integer.parseInt(splitStr[3]);
             system = new FileSystem(rootName, sectorNumber, sectorSize);
             running = true;
+
+            matriz = new VirtualMemory[sectorNumber][sectorSize];
+            String espacio = "";
+
+            for (int filas = 0; filas < sectorNumber; filas++){ // Inicializo Matriz como Vacia
+                for(int columnas = 0; columnas < sectorSize; columnas++){
+                    VirtualMemory elementos = new VirtualMemory('-', "PosicionStringPadre", ".TXT"); // Objeto Para guardar datos
+                    // 0: Caracter a guardar, 1: Posicion en el string padre, 2: Nombre del archivo padre
+                    matriz[filas][columnas] = elementos;
+                }
+            }
+
+            file = new File("memory.txt"); // Creo el Archivo
+            PrintWriter pw = new PrintWriter(file);
+
+            for(int cortes = 0; cortes < sectorSize; cortes++) { // Inicializo Filas Vacias para Archivo TXT
+                espacio += " ";
+            }
+
+            for(int linea = 0; linea < sectorNumber; linea++){ // Inicializo Archivo TXT con filas y columnas vacias
+                pw.println(espacio);
+            }
+
+            pw.close();
+            PrintWriter pw2 = new PrintWriter(file);
+
+            for (int filas = 0; filas < sectorNumber; filas++){ // Recorro la Matriz
+                for(int columnas = 0; columnas < sectorSize; columnas++) {
+                    pw2.print(matriz[filas][columnas].valor);
+                }
+                pw2.println("");
+            }
+
+            pw2.close();
+
             session.write("CRT Completed...");
         } else if ("FLE".equals(splitStr[0]) && running) {
             //FLE [File name:String] [overwrite:bool] [File contents:String begins with `{`]
@@ -71,6 +106,25 @@ public class TimeServerHandler extends IoHandlerAdapter {
             String joined = String.join("{", SepStringList);
             String fileContent= joined;
             session.write(system.createFile(fileName, overwrite, fileContent));
+            matriz = VirtualMemory.verificarSectores(fileContent,sectorNumber,sectorSize,matriz);
+            PrintWriter pw2 = new PrintWriter(file);
+
+            for (int filas = 0; filas < sectorNumber; filas++){ // Muestro la Matriz
+                for(int columnas = 0; columnas < sectorSize; columnas++){
+                    System.out.print(matriz[filas][columnas].valor);
+                }
+                System.out.print("\n");
+            }
+
+            for (int filas = 0; filas < sectorNumber; filas++){ // Recorro la Matriz
+                for(int columnas = 0; columnas < sectorSize; columnas++) {
+                    pw2.print(matriz[filas][columnas].valor);
+                }
+                pw2.println("");
+            }
+
+            pw2.close();
+
         } else if ("MKDIR".equals(splitStr[0]) && running) {
             //MKDIR [Directory name:String] [overwrite:bool]
             String dirName = splitStr[1];
