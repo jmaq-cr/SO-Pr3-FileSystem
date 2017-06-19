@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 
 import com.so.structures.FileSystem;
@@ -36,8 +37,6 @@ public class TimeServerHandler extends IoHandlerAdapter {
         System.out.println("Message written...");*/
 
 
-
-
         String input = message.toString();
         String[] splitStr = input.split("\\s+");
 
@@ -54,13 +53,23 @@ public class TimeServerHandler extends IoHandlerAdapter {
             running = true;
             session.write("CRT Completed...");
         } else if ("FLE".equals(splitStr[0]) && running) {
-            //FLE [File name:String] [overwrite:bool] [File contents:String]
+            //FLE [File name:String] [overwrite:bool] [File contents:String begins with `{`]
             String fileName = splitStr[1];
             boolean overwrite = false;
             if (splitStr[2].equals("true")) {
                 overwrite = true;
             }
-            String fileContent = splitStr[3];
+            //contents
+            String[] SepString = input.split("\\{");
+            ArrayList<String> SepStringList = new ArrayList<String>();
+
+            for (int i = 0; i < SepString.length; i++) {
+                if (i != 0) {
+                    SepStringList.add(SepString[i]);
+                }
+            }
+            String joined = String.join("{", SepStringList);
+            String fileContent= joined;
             session.write(system.createFile(fileName, overwrite, fileContent));
         } else if ("MKDIR".equals(splitStr[0]) && running) {
             //MKDIR [Directory name:String] [overwrite:bool]
@@ -78,9 +87,19 @@ public class TimeServerHandler extends IoHandlerAdapter {
             //LDIR
             session.write(system.listDir());
         } else if ("MFLE".equals(splitStr[0]) && running) {
-            //MFLE [File name:String] [File contents: String]
+            //MFLE [File name:String] [File contents:String begins with `{`]
             String fileName = splitStr[1];
-            String fileContent = splitStr[2];
+            //contents
+            String[] SepString = input.split("\\{");
+            ArrayList<String> SepStringList = new ArrayList<String>();
+
+            for (int i = 0; i < SepString.length; i++) {
+                if (i != 0) {
+                    SepStringList.add(SepString[i]);
+                }
+            }
+            String joined = String.join("{", SepStringList);
+            String fileContent= joined;
             session.write(system.modifyFileContent(fileName, fileContent));
         } else if ("PPT".equals(splitStr[0]) && running) {
             //PPT [File name:String]
@@ -117,7 +136,7 @@ public class TimeServerHandler extends IoHandlerAdapter {
             if (splitStr[2].equals("true")) {
                 newName = splitStr[3];
                 path = splitStr[4];
-            }else{
+            } else {
                 path = splitStr[3];
             }
             session.write(system.moveElement(fileName, newName, path));
@@ -127,7 +146,7 @@ public class TimeServerHandler extends IoHandlerAdapter {
             session.write(system.tree());
         } else if ("".equals(splitStr[0])) {
             //Do nothing
-        } else{
+        } else {
             session.write("Wrong command");
         }
 
